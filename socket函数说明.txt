@@ -1,0 +1,342 @@
+函数
+int socket(int domain,int type,int protocol);
+第一个参数   常用的是AF_INET，代表的是IPv4协议，AF_INET6是IPv6协议
+第二个参数  是套接口的类型：SOCK_STREAM或SOCK_DGRAM。
+第三个参数  协议类别，一般为0就可以了。
+系统调用socket()只返回一个套接口描述符。
+如果出错，则返回-1。
+
+
+int   bind(int sockfd,struct sockaddr*my_addr,int addrlen);
+把套接字sockfd绑定到某个地址
+第一个参数  sockfd是由socket()调用返回的套接口文件描述符。
+第二个参数  my_addr是指向数据结构sockaddr的指针。数据结构sockaddr中包括了关于你的地址、端口和IP地址的信息。
+第三个参数  addrlen可以设置成sizeof(struct  sockaddr)。
+当出错时，bind()将会返回-1值。
+
+int  listen(int  sockfd,int backlog);
+套接字sockfd 开始侦听
+第一个参数  是系统调用socket()返回的套接口文件描述符。
+第二个参数  是进入队列中允许的连接的个数。进入的连接请求在使用系统调用accept()应答之前要在进入队列中等待。
+这个值是队列中最多可以拥有的请求的个数。大多数系统的缺省设置为20。你可以设置为5或者10。
+当出错时，listen()将会返回-1值。
+
+int  accept(int  sockfd,void * addr,int*  addrlen);
+套接字sockfd listen()后开始接收，并把接收到的套接字的地址信息放到 addr里，返回已经接收到的套接字描述符
+第一个参数   是正在监听端口的套接口文件描述符。
+第二个参数   addr是指向本地的数据结构
+sockaddr_in的指针。调用connect()中的信息将存储在这里。通过它你可以了解哪个主机在哪个端口呼叫你。
+第三个参数同样可以使用sizeof(struct  sockaddr_in)来获得。
+如果出错，accept()也将返回-1。
+
+int connect(int  sockfd,struct sockaddr *  serv_addr,int  addrlen);
+套接字sockfd向地址信息为serv_addr 的socket连接
+第一个参数  还是套接口文件描述符，它是由系统调用socket()返回的。
+第二个参数  是serv_addr是指向数据结构sockaddr的指针，其中包括目的端口和IP地址。
+第三个参数  可以使用sizeof(struct  sockaddr)而获得。
+如果出错则返回-1。成功则返回0。
+
+int read(int handle, void *buf, int nbyte);
+从 handle中读，把内容放到  buf中，如果handle为套接字应该peer，而不是自身。
+int write(int handle, void *buf, int nbyte);
+向handle中写 buf中内容，如果handle为套接字应该为peer，而不是自身。
+以上2个返回值为读写的字节数
+
+int send(int sockfd,const void* msg,int len,int flags);
+向 sockfd 发送msg，sockfd 为peer
+第一个参数是你希望给发送数据的套接口文件描述符。它可以是你通过socket()系统调用返回的，
+也可以是通过accept()系统调用得到的。
+第二个参数是指向你希望发送的数据的指针。
+第三个参数是数据的字节长度。
+第四个参数标志设置为0。
+如果出错则返回-1。
+
+int recv(int sockfd,void* buf,int len,unsigned int flags);
+从sockfd 读取内容放到buf中，sockfd 为peer
+第一个参数 是要读取的套接口文件描述符。
+第二个参数 是保存读入信息的地址。
+第三个参数 是缓冲区的最大长度。
+第四个参数设置为0。
+系统调用recv()返回实际读取到缓冲区的字节数，如果出错则返回-1。
+
+
+int sendto(int sockfd,const void* msg,int len,unsigned int flags,const  struct sockaddr*  to,int  tolen);
+
+参数to        是指向包含目的IP地址和端口号的数据结构sockaddr的指针。
+参数tolen   可以设置为sizeof(structsockaddr)。
+其它参数和send()一样。
+系统调用sendto()返回实际发送的字节数，
+如果出错则返回-1。
+
+
+int recvfrom(int sockfd,void* buf,int len,unsigned int flags ，struct sockaddr* from,int* fromlen);
+参数from        是指向本地计算机中包含源IP地址和端口号的数据结构sockaddr的指针。
+参数fromlen   设置为sizeof(struct sockaddr)。
+其它参数和recv()一样。
+系统调用recvfrom()返回接收到的字节数，
+如果出错则返回-1。
+
+
+close(sockfd);
+不能再对此套接口做任何的读写操作。
+
+
+int shutdown(int sockfd,int how);
+使用系统调用shutdown()，可有更多的控制权。它允许你在某一个方向切断通信，或者切断双方的通信：
+第一个参数    是你希望切断通信的套接口文件描述符。
+第二个参数how值如下：
+0—Furtherreceivesaredisallowed
+1—Furthersendsaredisallowed
+2—Furthersendsandreceivesaredisallowed(likeclose())
+shutdown()如果成功则返回0，如果失败则返回-1。
+
+int getpeername(int  sockfd,struct sockaddr* addr,int* addrlen);
+第一个参数    是连接的数据流套接口文件描述符。
+第二个参数    是指向包含另一端的信息的数据结构sockaddr的指针。
+第三个参数    可以设置为sizeof(structsockaddr)。
+如果出错，系统调用将返回-1。
+一旦你获得了它们的地址，你可以使用inet_ntoa()或者gethostbyaddr()来得到更多的信息。
+
+int gethostname(char* hostname,size_tsize);
+第一个参数      一个指向将要存放主机名的缓冲区指针。
+第二个参数     缓冲区长度
+gethostbyname()可以使用这个名字来决定你的机器的IP地址。
+它返回程序正在运行的计算机的名字。
+如果成功，gethostname将返回0。
+如果失败，它将返回-1。
+
+
+字节顺序转换函数
+  我猜的：htonl（s）－－－－ host to net long（short）
+  所以 h －host    n－－net      l－－long     s－－short
+   uint32_t   htonl()
+   uint16_t   htons()
+    返回网络字节序
+    uint32_t    ntohl()
+    uint16_t    ntohs()
+    返回主机字节序
+
+
+通用套接口地址结构体
+struct sockaddr
+{
+    sa_family_t sa_family;//地址族（无符号的短整数在Linux中是两个字节）
+    char sa_data[14];      //地址数据
+} 
+在使用其他套接口地址时要强制转换成通用套接口地址 （struct sockaddr *）&addr 
+
+IPv4套接字地址结构体
+struct sockaddr_in
+{
+    sa_family_t sin_family;协议类型
+    in_port_t sin_port;端口号
+    struct in_addr sin_addr; IP地址
+    unsigned char zero[8];为0
+};
+Ip地址结构体：
+struct in_addr
+{
+    in_addr_t   s_addr;
+};
+
+struct in_addr以一个32位无符号数来表示，通常需要用到点分十进制数串与它之间的转换，使用inet_pton和inet_ntop来处理网络字节和主机字节之间的转换，原型如下：
+int  inet_pton(int family, const char *strptr, void *addrptr);
+如果使用IPv4协议，
+第一个参数是AF_INET
+第二个参数strprt为指向字符型的地址（ddd.ddd.ddd.ddd格式），函数将该地址转换为in_addr的结构体，并复制在*addrptr中。
+成功返回1，否则返回0。
+const char *inet_ntop(int family, const void *addrptr, char *strptr, size_t len);
+这个函数作用和上面相反，多了一个参数len，它是所指向缓存区addrptr的大小，避免溢出，如果缓存区太小无法存储地址的值，则返回一个空指针。
+
+字节转换
+每一台机器内部对变量的字节存储顺序不同，而网络传输的数据是一定要统一顺序的。
+所以对内部字节表示顺序与网络字节顺序不同的机器，一定要对数据进行转换，从程序的可移植性要求来讲，
+就算本机的内部字节表示顺序与网络字节顺序相同也应该在传输数据以前先调用数据转换函数，
+以便程序移植到其它机器上后能正确执行。真正转换还是不转换是由系统函数自己来决定的。
+ 有关的转换函数
+* unsigned short int htons（unsigned short int hostshort）：
+主机字节顺序转换成网络字节顺序，对无符号短型进行操作4bytes
+* unsigned long int htonl（unsigned long int hostlong）：
+主机字节顺序转换成网络字节顺序，对无符号长型进行操作8bytes
+* unsigned short int ntohs（unsigned short int netshort）：
+网络字节顺序转换成主机字节顺序，对无符号短型进行操作4bytes
+* unsigned long int ntohl（unsigned long int netlong）：
+网络字节顺序转换成主机字节顺序，对无符号长型进行操作8bytes
+注：以上函数原型定义在netinet/in.h里
+
+
+IP地址转换
+有三个函数将数字点形式表示的字符串IP地址与32位网络字节顺序的二进制形式的IP地址进行转换
+（1） unsigned long int inet_addr(const char *cp)：
+该函数把一个用数字和点表示的IP地址的字符串转换成一个无符号长整型，
+如：struct sockaddr_in  in
+in.sin_addr.s_addr=inet_addr("192.168.1.101")
+该函数成功时：返回转换结果；
+失败时返回常量INADDR_NONE，该常量=-1，二进制的无符号整数-1相当于
+255.255.255.255，这是一个广播地址，所以在程序中调用iner_addr（）时，一定要人为地对调用失败进行处理。
+由于该函数不能处理广播地址，所以在程序中应该使用函数inet_aton（）。
+（2）int inet_aton（const char * cp,struct in_addr *inp）：
+此函数将字符串形式的IP地址转换成二进制形式的IP地址；
+成功时返回1，否则返回0，转换后的IP地址存储在参数inp中。
+（3） char * inet_ntoa（struct in-addrin）：
+将32位二进制形式的IP地址转换为数字点形式的IP地址，结果在函数返回值中返回，返回的是一个指向字符串的指针。
+
+字节处理函数
+Socket地址是多字节数据，不是以空字符结尾的，这和C语言中的字符串是不同的。Linux提供了两组函数来处理多字节数
+据，一组以b（byte）开头，是和BSD系统兼容的函数，另一组以mem（内存）开头，是ANSIC提供的函数。
+以b开头的函数有：
+（1） void bzero（void * s,intn）：将参数s指定的内存的前n个字节设置为0，通常它用来将套接字地址清0。
+（2） void bcopy（const void * src，void * dest，intn）：从参数src指定的内存区域拷贝指定数目的字节内容到参数
+dest指定的内存区域。
+（3） int bcmp（const void * s1，const void * s2，intn）：比较参数s1指定的内存区域和参数s2指定的内存区域的前n个
+字节内容，如果相同则返回0，否则返回非0。
+注：以上函数的原型定义在strings.h中。
+以mem开头的函数有：
+（1） void * memset（void * s，int c，size_tn）：将参数s指定的内存区域的前n个字节设置为参数c的内容。
+（2） void * memcpy（void * dest，const void * src，size_tn）：功能同bcopy（），区别：函数bcopy（）能处理参
+数src和参数dest所指定的区域有重叠的情况，memcpy（）则不能。
+（3） int memcmp（const void * s1，const void * s2，size_tn）：
+比较参数s1和参数s2指定区域的前n个字节内容，如果相同则返回0，否则返回非0。
+注：以上函数的原型定义在string.h中。
+
+Xcode下 socket 代码
+
+服务端
+
+#include <errno.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+int main(int argc, const char * argv[])
+{
+
+    int sfp,nfp;
+    struct sockaddr_in s_add,c_add;
+    unsigned int sin_size;
+
+    unsigned short portnum=3000;
+    
+    printf("Hello,welcome to my server !\r\n");
+    sfp = socket(AF_INET, SOCK_STREAM, 0);
+    if(-1 == sfp)
+    {
+        printf("socket fail ! \r\n");
+        return -1;
+    }
+    printf("socket ok !\r\n");
+    
+    
+    bzero(&s_add,sizeof(struct sockaddr_in));
+    s_add.sin_family=AF_INET;
+    s_add.sin_addr.s_addr=htonl(INADDR_ANY);
+    s_add.sin_port=htons(portnum);
+    
+    if(-1 == bind(sfp,(struct sockaddr *)(&s_add), sizeof(struct sockaddr)))
+    {
+        printf("bind fail !\r\n");
+        return -1;
+    }
+    printf("bind ok !\r\n");
+    
+    if(-1 == listen(sfp,5))
+    {
+        printf("listen fail !\r\n");
+        return -1;
+    }
+    printf("listen ok\r\n");
+    
+    while(1)
+    {
+        sin_size = sizeof(struct sockaddr_in);
+        
+        nfp = accept(sfp, (struct sockaddr *)(&c_add), &sin_size);
+        if(-1 == nfp)
+        {
+            printf("accept fail !\r\n");
+            return -1;
+        }
+        printf("accept ok!\r\nServer start get connect from %#x : %#x\r\n",ntohl(c_add.sin_addr.s_addr),ntohs(c_add.sin_port));
+        
+        
+        if(-1 == write(nfp,"hello,welcome to my server \r\n",32))
+        {
+            printf("write fail!\r\n");
+            return -1;
+        }
+        printf("write ok!\r\n");
+        close(nfp);
+        
+    }
+    close(sfp);
+    return 0;
+}
+
+
+客户端
+
+#include <errno.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main()
+{
+    int cfd;
+    ssize_t recbytes;
+    
+    char buffer[1024]={0};
+    struct sockaddr_in s_add;
+    unsigned short portnum=3000;
+    
+    printf("Hello,welcome to client !\r\n");
+    
+    cfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(-1 == cfd)
+    {
+        printf("socket fail ! \r\n");
+        return -1;
+    }
+    printf("socket ok !\r\n");
+    
+    bzero(&s_add,sizeof(struct sockaddr_in));
+    s_add.sin_family=AF_INET;
+    s_add.sin_addr.s_addr= inet_addr("127.0.0.1");
+    s_add.sin_port=htons(portnum);
+    printf("s_addr = %#x ,port : %#x\r\n",s_add.sin_addr.s_addr,s_add.sin_port);
+    
+    
+    if(-1 == connect(cfd,(struct sockaddr *)(&s_add), sizeof(struct sockaddr)))
+    {
+        printf("connect fail !\r\n");
+        return -1;
+    }
+    printf("connect ok !\r\n");
+    ssize_t num=1024;
+    if(-1 == (recbytes = read(cfd,buffer,num)))
+    {
+        printf("read data fail !\r\n");
+        return -1;
+    }
+    printf("read ok\r\nREC:\r\n");
+    
+    buffer[recbytes]='\0';
+    printf("%s\r\n",buffer);
+    
+    getchar();
+    close(cfd);
+    return 0;
+}
